@@ -25,6 +25,12 @@ import javax.persistence.MappedSuperclass;
  * @author Ken Krebs
  * @author Juergen Hoeller
  */
+/*Аннотация @MappedSuperclass позволяет включать класс и его jpa аннотации в производный класс,
+ не делая базовый класс сущностью. Типичное использование в примере выше — абстрактный базовый 
+ класс, несущий в себе суррогатный первичный ключ.
+В базе данных всё будет выглядеть, как если бы поля базового класса были определены непосредственно 
+в производном классе.
+*/
 @MappedSuperclass
 public class NamedEntity extends BaseEntity {
 
