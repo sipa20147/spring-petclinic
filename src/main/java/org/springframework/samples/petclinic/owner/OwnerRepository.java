@@ -62,6 +62,7 @@ public interface OwnerRepository extends Repository<Owner, Integer> {
 	 */
 	void save(Owner owner);
 
+	void delete(Owner owner);
 	/**
 	 * Returnes all the owners from data store
 	 **/

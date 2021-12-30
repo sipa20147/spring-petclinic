@@ -38,7 +38,7 @@ public class PetTypeFormatter implements Formatter<PetType> {
 
 	private final PetRepository pets;
 
-	@Autowired
+	@Autowired /**/
 	public PetTypeFormatter(PetRepository pets) {
 		this.pets = pets;
 	}

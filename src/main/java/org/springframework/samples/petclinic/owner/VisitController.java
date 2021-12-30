@@ -83,5 +83,11 @@ class VisitController {
 			return "redirect:/owners/{ownerId}";
 		}
 	}
+	@PostMapping("/owners/{ownerId}/pets/{petId}/{visitId}/remove")
+	public String processNewVisitForm(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId, @PathVariable("visitId") int visitId, Map<String, Object> model) {
+		Visit visit =this.visits.findById(visitId);
+		this.visits.deleteById(visit.getId());
+			return "redirect:/owners/{ownerId}";
+	}
 
 }

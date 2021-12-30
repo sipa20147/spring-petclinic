@@ -15,6 +15,8 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -44,6 +46,9 @@ class PetController {
 		this.pets = pets;
 		this.owners = owners;
 	}
+
+	@Autowired
+	private VisitRepository visit;
 
 	@ModelAttribute("types")
 	public Collection<PetType> populatePetTypes() {
@@ -109,5 +114,21 @@ class PetController {
 			return "redirect:/owners/{ownerId}";
 		}
 	}
-
+/*NEW*/
+	@PostMapping("/pets/{petId}/remove")
+	public String removePet(@PathVariable("ownerId") int ownerId, @PathVariable("petId") int petId, ModelMap model) {
+		//Pet pet = this.pets.findById(petId);
+		//Owner owner = this.owners.findById(ownerId);
+		//owner.delPet(pet);
+		visit.deleteByPetId(petId);
+		this.pets.deleteByPetId(petId);
+		//try{
+			//this.pets.delete(pet);
+		//} catch (Exception e)
+		//{
+		//	System.out.println(e.getMessage());
+	//	}		
+		return "redirect:/owners/{ownerId}";
+	}
+/*NEW*/ 
 }
