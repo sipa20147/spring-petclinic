@@ -21,7 +21,7 @@ import javax.validation.constraints.NotEmpty;
 
 /**
  * Simple JavaBean domain object representing an person.
- *
+ * Hello!
  * @author Ken Krebs
  */
 @MappedSuperclass
