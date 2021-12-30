@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 package org.springframework.samples.petclinic.vet;
-
+import javax.persistence.Transient;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
 import org.springframework.samples.petclinic.model.NamedEntity;
 
 /**
@@ -29,4 +28,19 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Table(name = "specialties")
 public class Specialty extends NamedEntity {
 
+/*NEW*/
+@Transient
+public String assigned = null;
+
+public String getAssigned() {
+	return assigned;
+}
+
+public void setAssigned(String assigned) {
+	if(assigned==null) {
+		this.assigned = null;
+		}else this.assigned = "on";
+	}
+
+/*NEW*/
 }

@@ -15,7 +15,9 @@
  */
 package org.springframework.samples.petclinic.vet;
 
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +28,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+/*NEW*/
+import javax.validation.Valid;
+
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.validation.BindingResult;
+/*NEW*/
+
 /**
  * @author Juergen Hoeller
  * @author Mark Fisher
@@ -35,11 +48,32 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 class VetController {
 
+	private static final String VIEWS_VET_UPDATE_FORM = "vets/updateVetForm";
+
 	private final VetRepository vets;
 
-	public VetController(VetRepository clinicService) {
+	private final SpecialtyRepository special;
+
+	private final VetSpecialtiesRepository vetSpecialties;
+
+/* Почему называется clinicService, а не просто типа vet? */ 
+	public VetController(VetRepository clinicService, SpecialtyRepository special, VetSpecialtiesRepository vetSpecialties) {
 		this.vets = clinicService;
+		this.special = special;
+		this.vetSpecialties = vetSpecialties;
 	}
+
+	@ModelAttribute("specialties")
+	public List<Specialty> allSpecialty() {
+		return this.special.findAllSpecialty();
+	}
+
+/*NEW*/
+	@InitBinder
+	public void setAllowedFields(WebDataBinder dataBinder) {
+		dataBinder.setDisallowedFields("id");
+	}
+/*NEW*/
 
 	@GetMapping("/vets.html")
 	public String showVetList(@RequestParam(defaultValue = "1") int page, Model model) {
@@ -53,6 +87,7 @@ class VetController {
 	}
 
 	private String addPaginationModel(int page, Page<Vet> paginated, Model model) {
+		model.addAttribute("listVets", paginated);
 		List<Vet> listVets = paginated.getContent();
 		model.addAttribute("currentPage", page);
 		model.addAttribute("totalPages", paginated.getTotalPages());
@@ -75,5 +110,88 @@ class VetController {
 		vets.getVetList().addAll(this.vets.findAll());
 		return vets;
 	}
+
+	@GetMapping("/vets/{vetId}/edit")
+	public String initUpdateVetForm(@PathVariable("vetId") int vetId, Model model) {
+		Vet vet = this.vets.findById(vetId);
+
+		List<Specialty> vetSpecialtyListAll = this.special.findAllSpecialty();
+		List<Specialty> vetSpecialtyListCurrent = vet.getSpecialties();
+
+		List<Specialty> temp = new ArrayList<Specialty>();
+		for (Specialty spAll : vetSpecialtyListAll) {
+			temp.add(spAll);
+		}
+
+		for (Specialty spAll : temp) {
+			for (Specialty spCurr : vetSpecialtyListCurrent) {
+				if(spCurr.getName() == spAll.getName()) {
+					spAll.setAssigned("on");	
+			}
+			System.out.println(spAll.getAssigned() + ", " + spAll.getName());
+			}
+		}
+
+		vet.vetSpecialtyList = temp;
+		model.addAttribute(vet);
+		return VIEWS_VET_UPDATE_FORM;
+	}
+
+	@PostMapping("/vets/{vetId}/edit")
+	public String processUpdateVetForm(@Valid Vet vet,  BindingResult result, @PathVariable("vetId") int vetId, Model model) {
+
+		System.out.println("hello - start");
+		System.out.println("===============");
+
+		if (result.hasErrors()) {
+			System.out.println("error");
+			return VIEWS_VET_UPDATE_FORM;
+		}
+		else {
+			vet.setId(vetId);
+			this.vets.save(vet);
+
+			this.vetSpecialties.deleteByVetId(vetId);
+			List<Specialty> vetSpecialtyNew = vet.getVetSpecialtyList();
+
+			for (Specialty specialNew : vetSpecialtyNew) {
+				System.out.println(specialNew.getAssigned() + ", " + specialNew.getName());
+				}	
+
+			for (Specialty specialNew : vetSpecialtyNew) {
+				if(specialNew.assigned == "on"){
+				int specialtyId = specialNew.getId();
+				this.vetSpecialties.addByVetId_(vetId, specialtyId);
+				}
+				}
+			
+			System.out.println("===============");
+			System.out.println("hello - end");
+			return "redirect:/vets/{vetId}";
+		}
+	}
+
+	@GetMapping("/vets/{vetId}")
+	public ModelAndView showVet(@PathVariable("vetId") int vetId) {
+		ModelAndView mav = new ModelAndView("vets/vetDetails");
+		Vet vet = this.vets.findById(vetId);
+		mav.addObject(vet);
+		return mav;
+	}
+
+	@PostMapping("/vets/{vetId}/remove")
+	public String DeleteVet(@PathVariable("vetId") int vetId, Model model) {
+		Vet vet = this.vets.findById(vetId);
+		this.vetSpecialties.deleteByVetId(vetId);
+		this.vets.deleteByVetId(vetId);
+		return "redirect:/vets.html";
+	}
+
+	@GetMapping(value = "/test")
+	public String showCheckbox(Model model) {
+	boolean myBooleanVariable = false;
+	model.addAttribute("myBooleanVariable", myBooleanVariable);
+	return "sample-checkbox";
+}
 
 }
