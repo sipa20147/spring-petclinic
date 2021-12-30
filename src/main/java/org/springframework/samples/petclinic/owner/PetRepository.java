@@ -18,6 +18,9 @@ package org.springframework.samples.petclinic.owner;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -37,6 +40,7 @@ public interface PetRepository extends Repository<Pet, Integer> {
 	/**
 	 * Retrieve all {@link PetType}s from the data store.
 	 * @return a Collection of {@link PetType}s.
+	 * ищет все типы животных в объекте PetType 
 	 */
 	@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")
 	@Transactional(readOnly = true)
@@ -55,5 +59,12 @@ public interface PetRepository extends Repository<Pet, Integer> {
 	 * @param pet the {@link Pet} to save
 	 */
 	void save(Pet pet);
+
+	@Transactional
+	@Modifying
+	@Query("DELETE FROM Pet WHERE Id=:petId")
+	void deleteByPetId(@Param("petId") Integer petId) throws DataAccessException;
+
+	void delete(Pet pet);
 
 }

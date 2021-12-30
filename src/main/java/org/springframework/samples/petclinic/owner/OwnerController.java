@@ -68,6 +68,7 @@ class OwnerController {
 	}
 
 	@PostMapping("/owners/new")
+	/*з него мы можем узнать были ли ошибки валидации и какие при байденге http запроса на объект в контроллере*/
 	public String processCreationForm(@Valid Owner owner, BindingResult result) {
 		if (result.hasErrors()) {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
@@ -78,12 +79,12 @@ class OwnerController {
 		}
 	}
 
-	@GetMapping("/owners/find")
+	@GetMapping("/owners/find") /*при обращении к /owners/find вызывается данный метод*/
 	public String initFindForm(Map<String, Object> model) {
 		model.put("owner", new Owner());
 		return "owners/findOwners";
 	}
-
+/*@RequestParam - данные берутся из запрос. В данном случае page (ну там ?page=1&...)*/
 	@GetMapping("/owners")
 	public String processFindForm(@RequestParam(defaultValue = "1") int page, Owner owner, BindingResult result,
 			Model model) {
@@ -155,8 +156,10 @@ class OwnerController {
 	 * Custom handler for displaying an owner.
 	 * @param ownerId the ID of the owner to display
 	 * @return a ModelMap with the model attributes for the view
+	 * 
+	 * Для работы с параметрами, передаваемыми через адрес запроса в Spring WebMVC используется аннотация @PathVariable.
 	 */
-	@GetMapping("/owners/{ownerId}")
+	@GetMapping("/owners/{ownerId}")/*1  2  3*/ 
 	public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("owners/ownerDetails");
 		Owner owner = this.owners.findById(ownerId);
@@ -165,6 +168,13 @@ class OwnerController {
 		}
 		mav.addObject(owner);
 		return mav;
+	}
+
+	@PostMapping("/owners/{ownerId}/remove")
+	public String removeOwner(@PathVariable("ownerId") int ownerId, Model model) {
+		Owner owner = this.owners.findById(ownerId);
+		this.owners.delete(owner);
+		return "redirect:/owners";
 	}
 
 }

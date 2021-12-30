@@ -43,8 +43,8 @@ import org.springframework.samples.petclinic.model.Person;
  * @author Sam Brannen
  * @author Michael Isvy
  */
-@Entity
-@Table(name = "owners")
+@Entity /*это сущность базы данных owner у нее есть связанная таблица owners в БД*/
+@Table(name = "owners") /*помогает определить явно некоторую информацию о таблице*/
 public class Owner extends Person {
 
 	@Column(name = "address")
@@ -60,7 +60,13 @@ public class Owner extends Person {
 	@Digits(fraction = 0, integer = 10)
 	private String telephone;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL /*удаляться и связанные ячейки*/, mappedBy = "owner", fetch = FetchType.EAGER)
+	/* 1мвладелец ==> много животных pets
+	А вот у владеемого объекта на этот раз всё иначе. Поскольку по одному адресу может 
+	проживать несколько жильцов, то поле tenants представлено коллекцией, которая имеет 
+	аннотацию @OneToMany. Параметр mappedBy также указывает на поле в классе владельца. 
+	Параметр fetch=FetchType.EAGER говорит о том, что при загрузке владеемого объекта необходимо 
+	сразу загрузить и коллекцию владельцев.*/
 	private Set<Pet> pets;
 
 	public String getAddress() {
@@ -97,7 +103,16 @@ public class Owner extends Person {
 	protected void setPetsInternal(Set<Pet> pets) {
 		this.pets = pets;
 	}
-
+/*
+public MutableSortDefinition(String property,
+                             boolean ignoreCase,
+                             boolean ascending)
+Create a MutableSortDefinition for the given settings.
+Parameters:
+property - the property to compare
+ignoreCase - whether upper and lower case in String values should be ignored
+as
+*/
 	public List<Pet> getPets() {
 		List<Pet> sortedPets = new ArrayList<>(getPetsInternal());
 		PropertyComparator.sort(sortedPets, new MutableSortDefinition("name", true, true));
@@ -109,6 +124,10 @@ public class Owner extends Person {
 			getPetsInternal().add(pet);
 		}
 		pet.setOwner(this);
+	}
+
+	public void delPet(Pet pet) {
+		pets.remove(pet);
 	}
 
 	/**
